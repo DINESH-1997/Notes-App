@@ -54,9 +54,45 @@ class AddEditNoteViewModel @Inject constructor(
             AddEditNoteEvent.SaveNote -> {
                 saveNote()
             }
-
             is AddEditNoteEvent.GetNote -> {
                 getNote(event.id)
+            }
+
+            //Permission handling events
+            is AddEditNoteEvent.DismissDialogue -> {
+                addEditNoteState = addEditNoteState.copy(
+                    showPermissionDialogue = false
+                )
+            }
+            is AddEditNoteEvent.PermissionGranted -> {
+                addEditNoteState = addEditNoteState.copy(
+                    hasRecordAudioPermission = true,
+                    hasPermanentlyDeclined = false,
+                    showPermissionDialogue = false
+                )
+            }
+            is AddEditNoteEvent.PermissionRevoked -> {
+                addEditNoteState = addEditNoteState.copy(
+                    hasRecordAudioPermission = false,
+                    hasPermanentlyDeclined = true,
+                    showPermissionDialogue = true
+                )
+            }
+            is AddEditNoteEvent.ShowRationale -> {
+                addEditNoteState = addEditNoteState.copy(
+                    hasRecordAudioPermission = false,
+                    hasPermanentlyDeclined = false,
+                    showPermissionDialogue = true
+                )
+            }
+
+            is AddEditNoteEvent.SpeechToTextContent -> {
+                addEditNoteState = addEditNoteState.copy(
+                    noteContent = addEditNoteState.noteContent.copy(
+                        text = "${addEditNoteState.noteContent.text} ${event.value}",
+                        isHintVisible = event.value.isBlank()
+                    )
+                )
             }
         }
     }
