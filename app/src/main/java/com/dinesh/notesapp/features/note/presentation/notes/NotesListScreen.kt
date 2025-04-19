@@ -1,9 +1,10 @@
 package com.dinesh.notesapp.features.note.presentation.notes
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
@@ -20,11 +21,14 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.dinesh.notesapp.R
 import com.dinesh.notesapp.features.note.domain.model.Note
 import com.dinesh.notesapp.features.note.presentation.AddEditNotesScreen
 import com.dinesh.notesapp.features.note.presentation.notes.components.NoteCard
@@ -60,44 +64,57 @@ fun NotesListScreen(
             }
         }
     ) { padding ->
-        LazyVerticalStaggeredGrid(
-            columns = StaggeredGridCells.Adaptive(200.dp),
-            verticalItemSpacing = 4.dp,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            content = {
-                items(notesState.notes) { note ->
-                    NoteCard(
-                        note = note,
-                        noteEventCallBack = object : NoteEventCallBack {
-                            override fun onEdit(id: Int?) {
-                                navController.navigate(AddEditNotesScreen(id!!))
-                            }
+        if (notesState.notes.isNotEmpty()) {
+            LazyVerticalStaggeredGrid(
+                columns = StaggeredGridCells.Adaptive(200.dp),
+                verticalItemSpacing = 4.dp,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                content = {
+                    items(notesState.notes) { note ->
+                        NoteCard(
+                            note = note,
+                            noteEventCallBack = object : NoteEventCallBack {
+                                override fun onEdit(id: Int?) {
+                                    navController.navigate(AddEditNotesScreen(id!!))
+                                }
 
-                            override fun onDelete(note: Note) {
-                                onEvent(NotesEvent.Delete(note))
-                                scope.launch {
-                                    val result = snackBarHostState.showSnackbar(
-                                        message = "Note deleted successfully",
-                                        actionLabel = "Undo",
-                                        duration = SnackbarDuration.Long
-                                    )
-                                    when (result) {
-                                        SnackbarResult.Dismissed -> {}
-                                        SnackbarResult.ActionPerformed -> {
-                                            onEvent(NotesEvent.RestoreNote)
+                                override fun onDelete(note: Note) {
+                                    onEvent(NotesEvent.Delete(note))
+                                    scope.launch {
+                                        val result = snackBarHostState.showSnackbar(
+                                            message = "Note deleted successfully",
+                                            actionLabel = "Undo",
+                                            duration = SnackbarDuration.Long
+                                        )
+                                        when (result) {
+                                            SnackbarResult.Dismissed -> {}
+                                            SnackbarResult.ActionPerformed -> {
+                                                onEvent(NotesEvent.RestoreNote)
+                                            }
                                         }
                                     }
                                 }
-                            }
 
-                        }
-                    )
-                }
-            },
-            modifier = Modifier
-                .padding(padding)
-                .padding(8.dp)
-        )
+                            }
+                        )
+                    }
+                },
+                modifier = Modifier
+                    .padding(padding)
+                    .padding(8.dp)
+            )
+        } else {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.img_no_notes),
+                    contentDescription = null
+                )
+            }
+
+        }
     }
 }
 
